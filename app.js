@@ -5,9 +5,8 @@ const albumsRoutes = require('./routes/albums');
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.get('/', (req, res) => {
-    res.send('Server is running!');
-});
+app.use(bodyParser.json());
+app.use('/api', albumsRoutes)
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
