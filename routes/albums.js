@@ -4,9 +4,9 @@ const db = require('../config/db');
 
 // Create a new album
 router.post('/albums', (req, res) => {
-    const { album_naam, bandofartist } = req.body;
-    const sql = 'INSERT INTO albums (album_naam, bandofartist) VALUES (?, ?)';
-    db.query(sql, [album_naam, bandofartist], (err, result) => {
+    const { name, band_or_artist, year } = req.body;
+    const sql = 'INSERT INTO albums (name, band_or_artist, year) VALUES (?, ?, ?)';
+    db.query(sql, [name, band_or_artist, year], (err, result) => {
       if (err) {
         return res.status(500).json({ error: err.message });
       }
@@ -43,9 +43,9 @@ router.get('/albums/:id', (req, res) => {
 // Update an album by ID
 router.put('/albums/:id', (req, res) => {
     const { id } = req.params;
-    const { album_naam, bandofartist } = req.body;
-    const sql = 'UPDATE albums SET album_naam = ?, bandofartist = ? WHERE id = ?';
-    db.query(sql, [album_naam, bandofartist, id], (err, result) => {
+    const { name, band_or_artist, year } = req.body;
+    const sql = 'UPDATE albums SET name = ?, band_or_artist = ?, year = ? WHERE id = ?';
+    db.query(sql, [name, band_or_artist, year, id], (err, result) => {
       if (err) {
         return res.status(500).json({ error: err.message });
       }
