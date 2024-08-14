@@ -39,6 +39,39 @@ router.get('/:id', (req, res) => {
     res.status(200).json(result[0]);
   });
 });
+
+// Read album with limit and offset
+router.get('/', (req, res) => {
+  const limit = parseInt(req.query.limit) || 10;  // Default limit to 10
+  const offset = parseInt(req.query.offset) || 0; // Default offset to 0
+
+  const sql = 'SELECT * FROM bands_or_artists LIMIT ? OFFSET ?';
+  db.query(sql, [limit, offset], (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.status(200).json(results);
+  });
+});
+
+// Read album based on search value
+router.get('/search', (req, res) => {
+  const searchField = req.query.field;  // Field to search
+  const searchValue = req.query.value; // Value to search for
+
+  if (!searchField || !searchValue) {
+    return res.status(400).json({ error: 'Search field and value are required' });
+  }
+
+  const sql = 'SELECT * FROM bands_or_artists WHERE ?? LIKE ?';
+  db.query(sql, [searchField, `%${searchValue}%`], (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.status(200).json(results);
+  });
+});
+
 // Update a Band/Artist by ID
 router.put('/:id', (req, res) => {
   const { id } = req.params;
