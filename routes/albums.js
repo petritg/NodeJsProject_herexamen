@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require('../config/db');
 
 // Create a new album
-router.post('/albums', (req, res) => {
+router.post('/', (req, res) => {
     const { name, band_or_artist, year } = req.body;
     const sql = 'INSERT INTO albums (name, band_or_artist, year) VALUES (?, ?, ?)';
     db.query(sql, [name, band_or_artist, year], (err, result) => {
@@ -15,7 +15,7 @@ router.post('/albums', (req, res) => {
   });
 
 // Read all albums
-router.get('/albums', (req, res) => {
+router.get('/', (req, res) => {
     const sql = 'SELECT * FROM albums';
     db.query(sql, (err, results) => {
       if (err) {
@@ -26,7 +26,7 @@ router.get('/albums', (req, res) => {
   });
 
 // Read a single album by ID
-router.get('/albums/:id', (req, res) => {
+router.get('/:id', (req, res) => {
     const { id } = req.params;
     const sql = 'SELECT * FROM albums WHERE id = ?';
     db.query(sql, [id], (err, result) => {
@@ -41,7 +41,7 @@ router.get('/albums/:id', (req, res) => {
   });
 
 // Update an album by ID
-router.put('/albums/:id', (req, res) => {
+router.put('/:id', (req, res) => {
     const { id } = req.params;
     const { name, band_or_artist, year } = req.body;
     const sql = 'UPDATE albums SET name = ?, band_or_artist = ?, year = ? WHERE id = ?';
@@ -57,7 +57,7 @@ router.put('/albums/:id', (req, res) => {
   });
 
 // Delete an album by ID
-router.delete('/albums/:id', (req, res) => {
+router.delete('/:id', (req, res) => {
     const { id } = req.params;
     const sql = 'DELETE FROM albums WHERE id = ?';
     db.query(sql, [id], (err, result) => {
