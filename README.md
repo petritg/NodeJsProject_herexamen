@@ -1,1 +1,1 @@
-todo next: validatie van waarden bij post routes (error bij ontbrekende waarden)
+todo next: checken op copy paste foutjes, alles testen, zippen en shippen
