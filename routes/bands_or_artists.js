@@ -5,6 +5,14 @@ const db = require('../config/db');
 // Create new Band/Artist
 router.post('/', (req, res) => {
     const { name, genre, location } = req.body;
+
+    // Validate that none of the required fields are empty or undefined
+    if (!name || !genre || !location) {
+      return res.status(400).json({ 
+        error: 'All fields (name, genre, and location) are required and cannot be empty.'
+      });
+    }
+
     const sql = 'INSERT INTO bands_or_artists (name, genre, location) VALUES (?, ?, ?)';
     db.query(sql, [name, genre, location], (err, result) => {
       if (err) {
@@ -76,15 +84,40 @@ router.get('/search', (req, res) => {
 router.put('/:id', (req, res) => {
   const { id } = req.params;
   const { name, genre, location } = req.body;
-  const sql = 'UPDATE bands_or_artists SET name = ?, genre = ?, location = ? WHERE id = ?';
-  db.query(sql, [name, genre, location, id], (err, result) => {
+
+  const updates = [];
+  const values = [];
+
+  if (name !== undefined)  {
+    updates.push('name = ?');
+    values.push(name);
+  }
+
+  if (genre !== undefined) {
+    updates.push('genre = ?');
+    values.push(genre);
+  }
+
+  if (location !== undefined) {
+    updates.push('location = ?');
+    values.push(location);
+  }
+
+  if (updates.length === 0) {
+    return res.status(400).json({ error: 'At least one field (name, genre, or location) must be provided for update.' });
+  }
+
+  const sql = `UPDATE albums SET ${updates.join(', ')} WHERE id = ?`;
+  values.push(id);
+
+  db.query(sql, values, (err, result) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
     if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Album not found' });
+      return res.status(404).json({ message: 'Band or artist not found' });
     }
-    res.status(200).json({ message: 'Album updated' });
+    res.status(200).json({ message: 'Band or artist updated' });
   });
 });
 
