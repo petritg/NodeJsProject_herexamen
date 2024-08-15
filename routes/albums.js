@@ -88,19 +88,52 @@ router.get('/search', (req, res) => {
 
 // Update an album by ID
 router.put('/:id', (req, res) => {
-    const { id } = req.params;
-    const { name, band_or_artist, year } = req.body;
-    const sql = 'UPDATE albums SET name = ?, band_or_artist = ?, year = ? WHERE id = ?';
-    db.query(sql, [name, band_or_artist, year, id], (err, result) => {
+  const { id } = req.params;
+  const { name, band_or_artist, year } = req.body;
+
+  // Create an array to hold the SQL updates and values
+  const updates = [];
+  const values = [];
+
+  // Validate and add fields to the update array if provided
+  if (name !== undefined) {
+      updates.push('name = ?');
+      values.push(name);
+  }
+
+  if (band_or_artist !== undefined) {
+      updates.push('band_or_artist = ?');
+      values.push(band_or_artist);
+  }
+
+  if (year !== undefined) {
+      if (isNaN(year)) {
+          return res.status(400).json({ error: 'Year must be a valid number.' });
+      }
+      updates.push('year = ?');
+      values.push(year);
+  }
+
+  // Check if there's something to update
+  if (updates.length === 0) {
+      return res.status(400).json({ error: 'At least one field (name, band_or_artist, or year) must be provided for update.' });
+  }
+
+  // Build the SQL query
+  const sql = `UPDATE albums SET ${updates.join(', ')} WHERE id = ?`;
+  values.push(id);
+
+  // Execute the SQL query
+  db.query(sql, values, (err, result) => {
       if (err) {
-        return res.status(500).json({ error: err.message });
+          return res.status(500).json({ error: err.message });
       }
       if (result.affectedRows === 0) {
-        return res.status(404).json({ message: 'Album not found' });
+          return res.status(404).json({ message: 'Album not found' });
       }
       res.status(200).json({ message: 'Album updated' });
-    });
   });
+});
 
 // Delete an album by ID
 router.delete('/:id', (req, res) => {
