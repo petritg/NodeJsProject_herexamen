@@ -5,6 +5,20 @@ const db = require('../config/db');
 // Create a new album
 router.post('/', (req, res) => {
     const { name, band_or_artist, year } = req.body;
+
+    // Validate that none of the required fields are empty or undefined
+    if (!name || !band_or_artist || !year) {
+      return res.status(400).json({ 
+        error: 'All fields (name, band_or_artist, and year) are required and cannot be empty.'
+      });
+    }
+
+    // Validate that the year is a number
+  if (isNaN(year)) {
+    return res.status(400).json({ 
+      error: 'Year must be a valid number.'
+    });
+  }
     const sql = 'INSERT INTO albums (name, band_or_artist, year) VALUES (?, ?, ?)';
     db.query(sql, [name, band_or_artist, year], (err, result) => {
       if (err) {
