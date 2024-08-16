@@ -18,7 +18,7 @@ router.post('/', (req, res) => {
       if (err) {
         return res.status(500).json({ error: err.message });
       }
-      res.status(201).json({ message: 'Album created', albumId: result.insertId });
+      res.status(201).json({ message: 'Band or artist created', albumId: result.insertId });
     });
   });
 
@@ -42,13 +42,13 @@ router.get('/:id', (req, res) => {
       return res.status(500).json({ error: err.message });
     }
     if (result.length === 0) {
-      return res.status(404).json({ message: 'Album not found' });
+      return res.status(404).json({ message: 'Band or Artist not found' });
     }
     res.status(200).json(result[0]);
   });
 });
 
-// Read album with limit and offset
+// Read band or artist with limit and offset
 router.get('/', (req, res) => {
   const limit = parseInt(req.query.limit) || 10;  // Default limit to 10
   const offset = parseInt(req.query.offset) || 0; // Default offset to 0
@@ -62,7 +62,7 @@ router.get('/', (req, res) => {
   });
 });
 
-// Read album based on search value
+// Read band or artist based on search value
 router.get('/search', (req, res) => {
   const searchField = req.query.field;  // Field to search
   const searchValue = req.query.value; // Value to search for
@@ -107,7 +107,7 @@ router.put('/:id', (req, res) => {
     return res.status(400).json({ error: 'At least one field (name, genre, or location) must be provided for update.' });
   }
 
-  const sql = `UPDATE albums SET ${updates.join(', ')} WHERE id = ?`;
+  const sql = `UPDATE bands_or_artists SET ${updates.join(', ')} WHERE id = ?`;
   values.push(id);
 
   db.query(sql, values, (err, result) => {
@@ -130,9 +130,9 @@ router.delete('/:id', (req, res) => {
       return res.status(500).json({ error: err.message });
     }
     if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Album not found' });
+      return res.status(404).json({ message: 'Band or artist not found' });
     }
-    res.status(200).json({ message: 'Album deleted' });
+    res.status(200).json({ message: 'Band or artist deleted' });
   });
 });
 
