@@ -22,9 +22,21 @@ router.post('/', (req, res) => {
     });
   });
 
-// Read all Bands/Artists
+// Read all bands or artists (optional: limit and/or offset)
 router.get('/', (req, res) => {
-  const sql = 'SELECT * FROM bands_or_artists';
+  const limit = req.query.limit ? parseInt(req.query.limit, 10) : null;
+  const offset = req.query.offset ? parseInt(req.query.offset, 10) : null;
+
+  let sql = 'SELECT * FROM bands_or_artists';
+
+  if (limit !== null && offset !== null) {
+    sql += ` LIMIT ${limit} OFFSET ${offset}`;
+  } else if (limit !== null) {
+    sql += ` LIMIT ${limit}`;
+  } else if (offset !== null) {
+    sql += ` OFFSET ${offset}`;
+  }
+
   db.query(sql, (err, results) => {
     if (err) {
       return res.status(500).json({ error: err.message });
@@ -48,19 +60,6 @@ router.get('/:id', (req, res) => {
   });
 });
 
-// Read band or artist with limit and offset
-router.get('/', (req, res) => {
-  const limit = parseInt(req.query.limit) || 10;  // Default limit to 10
-  const offset = parseInt(req.query.offset) || 0; // Default offset to 0
-
-  const sql = 'SELECT * FROM bands_or_artists LIMIT ? OFFSET ?';
-  db.query(sql, [limit, offset], (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    res.status(200).json(results);
-  });
-});
 
 // Read band or artist based on search value
 router.get('/search', (req, res) => {
