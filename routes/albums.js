@@ -70,14 +70,24 @@ router.get('/:id', (req, res) => {
 // Read album based on search value
 router.get('/search', (req, res) => {
   const searchField = req.query.field;  // Field to search
-  const searchValue = req.query.value; // Value to search for
+  const searchValue = req.query.value;  // Value to search for
+
+  // List of allowed fields to prevent SQL injection
+  const allowedFields = ['name', 'band_or_artist', 'year']; // Adjust based on your table columns
+
+  // Validate that the searchField is one of the allowed fields
+  if (!allowedFields.includes(searchField)) {
+    return res.status(400).json({ error: 'Invalid search field' });
+  }
 
   if (!searchField || !searchValue) {
     return res.status(400).json({ error: 'Search field and value are required' });
   }
 
-  const sql = 'SELECT * FROM albums WHERE ?? LIKE ?';
-  db.query(sql, [searchField, `%${searchValue}%`], (err, results) => {
+  // Construct the SQL query using db.escapeId for the field name
+  const sql = `SELECT * FROM albums WHERE ${db.escapeId(searchField)} LIKE ?`;
+
+  db.query(sql, [`%${searchValue}%`], (err, results) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
