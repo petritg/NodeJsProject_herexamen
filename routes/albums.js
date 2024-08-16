@@ -14,30 +14,42 @@ router.post('/', (req, res) => {
     }
 
     // Validate that the year is a number
-  if (isNaN(year)) {
-    return res.status(400).json({ 
-      error: 'Year must be a valid number.'
-    });
-  }
+    if (isNaN(year)) {
+      return res.status(400).json({ 
+        error: 'Year must be a valid number.'
+      });
+    }
     const sql = 'INSERT INTO albums (name, band_or_artist, year) VALUES (?, ?, ?)';
-    db.query(sql, [name, band_or_artist, year], (err, result) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-      res.status(201).json({ message: 'Album created', albumId: result.insertId });
+      db.query(sql, [name, band_or_artist, year], (err, result) => {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+        res.status(201).json({ message: 'Album created', albumId: result.insertId });
+      });
     });
-  });
 
-// Read all albums
+// Read all albums (optional: limit and/or offset)
 router.get('/', (req, res) => {
-    const sql = 'SELECT * FROM albums';
-    db.query(sql, (err, results) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-      res.status(200).json(results);
-    });
+  const limit = req.query.limit ? parseInt(req.query.limit, 10) : null;
+  const offset = req.query.offset ? parseInt(req.query.offset, 10) : null;
+
+  let sql = 'SELECT * FROM albums';
+
+  if (limit !== null && offset !== null) {
+    sql += ` LIMIT ${limit} OFFSET ${offset}`;
+  } else if (limit !== null) {
+    sql += ` LIMIT ${limit}`;
+  } else if (offset !== null) {
+    sql += ` OFFSET ${offset}`;
+  }
+
+  db.query(sql, (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.status(200).json(results);
   });
+});
 
 // Read a single album by ID
 router.get('/:id', (req, res) => {
@@ -54,19 +66,6 @@ router.get('/:id', (req, res) => {
     });
   });
 
-// Read album with limit and offset
-router.get('/', (req, res) => {
-  const limit = parseInt(req.query.limit) || 10;  // Default limit to 10
-  const offset = parseInt(req.query.offset) || 0; // Default offset to 0
-
-  const sql = 'SELECT * FROM albums LIMIT ? OFFSET ?';
-  db.query(sql, [limit, offset], (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    res.status(200).json(results);
-  });
-});
 
 // Read album based on search value
 router.get('/search', (req, res) => {
