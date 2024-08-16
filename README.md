@@ -1,1 +1,1 @@
-todo next: checken op copy paste foutjes, alles testen, zippen en shippen
+todo next: search nog proberen fixen indien mogelijk, migrations, zippen en shippen
