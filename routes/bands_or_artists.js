@@ -6,7 +6,6 @@ const db = require('../config/db');
 router.post('/', (req, res) => {
     const { name, genre, location } = req.body;
 
-    // Validate that none of the required fields are empty or undefined
     if (!name || !genre || !location) {
       return res.status(400).json({ 
         error: 'All fields (name, genre, and location) are required and cannot be empty.'
