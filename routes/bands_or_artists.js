@@ -64,14 +64,25 @@ router.get('/:id', (req, res) => {
 // Read band or artist based on search value
 router.get('/search', (req, res) => {
   const searchField = req.query.field;  // Field to search
-  const searchValue = req.query.value; // Value to search for
+  const searchValue = req.query.value;  // Value to search for
 
-  if (!searchField || !searchValue) {
-    return res.status(400).json({ error: 'Search field and value are required' });
+  // List of allowed fields to prevent SQL injection
+  const allowedFields = ['name', 'genre', 'location'];
+
+  // Validate that the searchField is one of the allowed fields
+  if (!searchField || !allowedFields.includes(searchField)) {
+    return res.status(400).json({ error: 'Invalid or missing search field' });
   }
 
-  const sql = 'SELECT * FROM bands_or_artists WHERE ?? LIKE ?';
-  db.query(sql, [searchField, `%${searchValue}%`], (err, results) => {
+  if (!searchValue) {
+    return res.status(400).json({ error: 'Search value is required' });
+  }
+
+  // Construct the SQL query
+  const sql = `SELECT * FROM bands_or_artists WHERE ?? LIKE ?`;
+  const values = [searchField, `%${searchValue}%`];
+
+  db.query(sql, values, (err, results) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }

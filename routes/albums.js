@@ -73,21 +73,26 @@ router.get('/search', (req, res) => {
   const searchValue = req.query.value;  // Value to search for
 
   // List of allowed fields to prevent SQL injection
-  const allowedFields = ['name', 'band_or_artist', 'year']; // Adjust based on your table columns
+  const allowedFields = ['name', 'band_or_artist', 'year'];
 
   // Validate that the searchField is one of the allowed fields
-  if (!allowedFields.includes(searchField)) {
-    return res.status(400).json({ error: 'Invalid search field' });
+  if (!searchField || !allowedFields.includes(searchField)) {
+    console.log('doe iets');
+    return res.status(400).json({ error: 'Invalid or missing search field' });
+    
   }
 
-  if (!searchField || !searchValue) {
-    return res.status(400).json({ error: 'Search field and value are required' });
+  if (!searchValue) {
+    console.log('doe iets');
+    return res.status(400).json({ error: 'Search value is required' });
   }
 
-  // Construct the SQL query using db.escapeId for the field name
-  const sql = `SELECT * FROM albums WHERE ${db.escapeId(searchField)} LIKE ?`;
+  // Construct the SQL query
+  const sql = `SELECT * FROM albums WHERE ?? LIKE ?`;
+  const values = [searchField, `%${searchValue}%`];
 
-  db.query(sql, [`%${searchValue}%`], (err, results) => {
+  console.log(db.format(sql, values))
+  db.query(sql, values, (err, results) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
