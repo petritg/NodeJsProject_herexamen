@@ -22,73 +22,39 @@ router.post('/', (req, res) => {
     });
   });
 
-// Read all bands or artists (optional: limit and/or offset)
+// Read all bands or artists (optional: limit and/or offset and search)
 router.get('/', (req, res) => {
+  const searchKeyword = req.query.search;
   const limit = req.query.limit ? parseInt(req.query.limit, 10) : null;
   const offset = req.query.offset ? parseInt(req.query.offset, 10) : null;
 
   let sql = 'SELECT * FROM bands_or_artists';
+  const values = [];
 
-  if (limit !== null && offset !== null) {
-    sql += ` LIMIT ${limit} OFFSET ${offset}`;
-  } else if (limit !== null) {
-    sql += ` LIMIT ${limit}`;
-  } else if (offset !== null) {
-    sql += ` OFFSET ${offset}`;
+  if (searchKeyword) {
+      sql += ' WHERE name LIKE ? OR genre LIKE ? OR location LIKE ?';
+      const likeSearch = `%${searchKeyword}%`;
+      values.push(likeSearch, likeSearch, likeSearch);
   }
 
-  db.query(sql, (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    res.status(200).json(results);
-  });
-});
-
-// Read a single Band/Artist by ID
-router.get('/:id', (req, res) => {
-  const { id } = req.params;
-  const sql = 'SELECT * FROM bands_or_artists WHERE id = ?';
-  db.query(sql, [id], (err, result) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    if (result.length === 0) {
-      return res.status(404).json({ message: 'Band or Artist not found' });
-    }
-    res.status(200).json(result[0]);
-  });
-});
-
-
-// Read band or artist based on search value
-router.get('/search', (req, res) => {
-  const searchField = req.query.field;  // Field to search
-  const searchValue = req.query.value;  // Value to search for
-
-  // List of allowed fields to prevent SQL injection
-  const allowedFields = ['name', 'genre', 'location'];
-
-  // Validate that the searchField is one of the allowed fields
-  if (!searchField || !allowedFields.includes(searchField)) {
-    return res.status(400).json({ error: 'Invalid or missing search field' });
+  if (limit !== null) {
+      sql += ' LIMIT ?';
+      values.push(limit);
   }
 
-  if (!searchValue) {
-    return res.status(400).json({ error: 'Search value is required' });
+  if (offset !== null) {
+      sql += ' OFFSET ?';
+      values.push(offset);
   }
-
-  // Construct the SQL query
-  const sql = `SELECT * FROM bands_or_artists WHERE ?? LIKE ?`;
-  const values = [searchField, `%${searchValue}%`];
 
   db.query(sql, values, (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    res.status(200).json(results);
+      if (err) {
+          return res.status(500).json({ error: err.message });
+      }
+      res.status(200).json(results);
   });
 });
+
 
 // Update a Band/Artist by ID
 router.put('/:id', (req, res) => {

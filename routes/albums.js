@@ -28,9 +28,9 @@ router.post('/', (req, res) => {
       });
     });
 
-// Read all albums (optional: limit and/or offset)
+// Read all albums (optional: limit and/or offset and search)
 router.get('/', (req, res) => {
-  const searchKeyword = req.query.search; // Get the search keyword from the query parameter
+  const searchKeyword = req.query.search;
   const limit = req.query.limit ? parseInt(req.query.limit, 10) : null;
   const offset = req.query.offset ? parseInt(req.query.offset, 10) : null;
 
