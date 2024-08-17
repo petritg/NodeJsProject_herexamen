@@ -30,24 +30,34 @@ router.post('/', (req, res) => {
 
 // Read all albums (optional: limit and/or offset)
 router.get('/', (req, res) => {
+  const searchKeyword = req.query.search; // Get the search keyword from the query parameter
   const limit = req.query.limit ? parseInt(req.query.limit, 10) : null;
   const offset = req.query.offset ? parseInt(req.query.offset, 10) : null;
 
   let sql = 'SELECT * FROM albums';
+  const values = [];
 
-  if (limit !== null && offset !== null) {
-    sql += ` LIMIT ${limit} OFFSET ${offset}`;
-  } else if (limit !== null) {
-    sql += ` LIMIT ${limit}`;
-  } else if (offset !== null) {
-    sql += ` OFFSET ${offset}`;
+  if (searchKeyword) {
+      sql += ' WHERE name LIKE ? OR band_or_artist LIKE ? OR year LIKE ?';
+      const likeSearch = `%${searchKeyword}%`;
+      values.push(likeSearch, likeSearch, likeSearch);
   }
 
-  db.query(sql, (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    res.status(200).json(results);
+  if (limit !== null) {
+      sql += ' LIMIT ?';
+      values.push(limit);
+  }
+
+  if (offset !== null) {
+      sql += ' OFFSET ?';
+      values.push(offset);
+  }
+
+  db.query(sql, values, (err, results) => {
+      if (err) {
+          return res.status(500).json({ error: err.message });
+      }
+      res.status(200).json(results);
   });
 });
 
@@ -66,39 +76,6 @@ router.get('/:id', (req, res) => {
     });
   });
 
-
-// Read album based on search value
-router.get('/search', (req, res) => {
-  const searchField = req.query.field;  // Field to search
-  const searchValue = req.query.value;  // Value to search for
-
-  // List of allowed fields to prevent SQL injection
-  const allowedFields = ['name', 'band_or_artist', 'year'];
-
-  // Validate that the searchField is one of the allowed fields
-  if (!searchField || !allowedFields.includes(searchField)) {
-    console.log('doe iets');
-    return res.status(400).json({ error: 'Invalid or missing search field' });
-    
-  }
-
-  if (!searchValue) {
-    console.log('doe iets');
-    return res.status(400).json({ error: 'Search value is required' });
-  }
-
-  // Construct the SQL query
-  const sql = `SELECT * FROM albums WHERE ?? LIKE ?`;
-  const values = [searchField, `%${searchValue}%`];
-
-  console.log(db.format(sql, values))
-  db.query(sql, values, (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    res.status(200).json(results);
-  });
-});
 
 // Update an album by ID
 router.put('/:id', (req, res) => {
